@@ -1,0 +1,13 @@
+version: '3'
+services:
+  mqtt:
+    image: fstehle/rpi-mosquitto
+    restart: always
+
+  web:
+    build: ./docker/web
+    restart: always
+#    volumes:
+#            - "./web:/"
+
+
