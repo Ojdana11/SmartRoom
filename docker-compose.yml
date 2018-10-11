@@ -9,5 +9,10 @@ services:
     restart: always
 #    volumes:
 #            - "./web:/"
-
+  db:
+    image: arm32v7/postgres
+    restart: always
+    environment:
+       POSTGRES_PASSWORD: cqobqocbqo1233
+    
 
