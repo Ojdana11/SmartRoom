@@ -1,18 +1,27 @@
 version: '3'
 services:
+  db:
+    image: arm32v7/postgres
+    restart: always
+    environment:
+       POSTGRES_PASSWORD: 1234
+
   mqtt:
     image: fstehle/rpi-mosquitto
     restart: always
 
   web:
     build: ./docker/web
+    command: python3 /code/manage.py runserver 0.0.0.0:8000
+#    command: tail -f /dev/null 
     restart: always
-#    volumes:
-#            - "./web:/"
-  db:
-    image: arm32v7/postgres
-    restart: always
-    environment:
-       POSTGRES_PASSWORD: cqobqocbqo1233
+    volumes:
+        - "./src:/code"
+    ports:
+        - "8080:8000"
+    depends_on:
+        - db
+        - mqtt
+
     
 
