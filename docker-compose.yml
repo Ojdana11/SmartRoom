@@ -9,6 +9,8 @@ services:
   mqtt:
     image: fstehle/rpi-mosquitto
     restart: always
+    ports:
+        - "1884:1883"
 
   redis:
     image: arm32v7/redis
@@ -28,5 +30,15 @@ services:
         - mqtt
         - redis
 
-    
+  mqtt_client:
+    build: ./docker/web
+    command: python3 /code/manage.py runmqttclient 
+#    command: tail -f /dev/null 
+    restart: always
+    volumes:
+        - "./src:/code"
+    depends_on:
+        - db
+        - mqtt
+        - redis
 

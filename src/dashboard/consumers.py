@@ -2,7 +2,6 @@
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 import json
-from dashboard.signals import mqtt_device_update
 
 class DashboardConsumer(WebsocketConsumer):
     GROUPNAME = 'dashboard'
@@ -13,7 +12,6 @@ class DashboardConsumer(WebsocketConsumer):
             self.channel_name
         )
         self.accept()
-        print('connected')
 
 
     def disconnect(self, close_code):
@@ -22,7 +20,6 @@ class DashboardConsumer(WebsocketConsumer):
             DashboardConsumer.GROUPNAME,
             self.channel_name
         )
-        print('disconnected')
 
     # Receive message from WebSocket
     def receive(self, text_data):
