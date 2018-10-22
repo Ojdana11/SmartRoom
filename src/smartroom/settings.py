@@ -127,3 +127,12 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 ASGI_APPLICATION = "smartroom.routing.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}

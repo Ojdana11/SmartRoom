@@ -1,18 +1,49 @@
 # dashboard/consumers.py
+from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 import json
+from dashboard.signals import mqtt_device_update
 
 class DashboardConsumer(WebsocketConsumer):
+    GROUPNAME = 'dashboard'
     def connect(self):
+        # Join dashboard group
+        async_to_sync(self.channel_layer.group_add)(
+            DashboardConsumer.GROUPNAME,
+            self.channel_name
+        )
         self.accept()
+        print('connected')
+
 
     def disconnect(self, close_code):
-        pass
+        # Leave dashboard group
+        async_to_sync(self.channel_layer.group_discard)(
+            DashboardConsumer.GROUPNAME,
+            self.channel_name
+        )
+        print('disconnected')
 
+    # Receive message from WebSocket
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
 
+        # Send message to room group
+        async_to_sync(self.channel_layer.group_send)(
+            DashboardConsumer.GROUPNAME,
+            {
+                'type': 'mqtt_update',
+                'message': message
+            }
+        )
+        
+
+    # Receive message from dashboard group
+    def mqtt_update(self, event):
+        message = event['message']
+
+        # Send message to WebSocket
         self.send(text_data=json.dumps({
             'message': message
         }))

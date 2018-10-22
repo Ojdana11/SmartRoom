@@ -10,6 +10,10 @@ services:
     image: fstehle/rpi-mosquitto
     restart: always
 
+  redis:
+    image: arm32v7/redis
+    restart: always
+
   web:
     build: ./docker/web
     command: python3 /code/manage.py runserver 0.0.0.0:8000
@@ -22,6 +26,7 @@ services:
     depends_on:
         - db
         - mqtt
+        - redis
 
     
 

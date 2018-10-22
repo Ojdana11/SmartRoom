@@ -1,3 +1,5 @@
 Django>=2.1,<3.0
 psycopg2
 paho-mqtt
+channels
+channels_redis
