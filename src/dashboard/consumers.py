@@ -30,17 +30,48 @@ class DashboardConsumer(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_send)(
             DashboardConsumer.GROUPNAME,
             {
-                'type': 'mqtt_update',
+                'type': 'caht_update',
                 'message': message
             }
         )
-        
 
-    # Receive message from dashboard group
-    def mqtt_update(self, event):
+    def caht_update(self, event):
         message = event['message']
 
         # Send message to WebSocket
         self.send(text_data=json.dumps({
             'message': message
+        }))
+
+    # Receive message from dashboard group
+    def mqtt_device_update(self, event):
+        device_name = event['device_name']
+        endpoint = event['endpoint']
+        value = event['value']
+
+        template = "<device {} update on {} endpoint> {}"
+        # Send message to WebSocket
+        self.send(text_data=json.dumps({
+            'message': template.format(device_name, endpoint, value)
+        }))
+
+    # Receive message from dashboard group
+    def mqtt_device_connected(self, event):
+        device_name = event['device_name']
+
+        template = "<device {} connected>"
+        # Send message to WebSocket
+        self.send(text_data=json.dumps({
+            'message': template.format(device_name)
+        }))
+
+        
+    # Receive message from dashboard group
+    def mqtt_device_disconnected(self, event):
+        device_name = event['device_name']
+
+        template = "<device {} disconnected>"
+        # Send message to WebSocket
+        self.send(text_data=json.dumps({
+            'message': template.format(device_name)
         }))

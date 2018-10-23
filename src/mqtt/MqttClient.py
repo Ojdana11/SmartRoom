@@ -4,6 +4,8 @@ from dashboard.consumers import DashboardConsumer
 from asgiref.sync import async_to_sync
 
 class MqttClient(mqtt.Client):
+    devices = ["cloudmqtt-user"]
+
     def __init__(self, ctx):
         super().__init__()
         self.ctx = ctx
@@ -12,31 +14,47 @@ class MqttClient(mqtt.Client):
     def on_connect(self, mqttc, obj, flags, rc):
         self.ctx.stdout.write(self.ctx.style.SUCCESS('Successfully connected to mqtt broker'))
 
-        self.subscribe("/xd")
+        for device_name in MqttClient.devices:
+            self.subscribe("/outbox/{}/+".format(device_name))
+            # ask for device info
+            self.publish("/inbox/{}/deviceInfo".format(device_name), "get")
 
     def on_message(self, mqttc, obj, msg):
         self.ctx.stdout.write("{} {} {}".format(msg.topic, msg.qos, msg.payload))
-        if msg.topic == "/xd":
-            try:
-                payload = msg.payload.decode("ascii")
-                async_to_sync(self.channel_layer.group_send)(
-                    DashboardConsumer.GROUPNAME, 
-                    {
-                        "type": "mqtt_update", 
-                        "message": payload,
-                    }
-                )
-            except Exception as e:
-                 self.ctx.stdout.write(self.ctx.style.ERROR("Failed to process payload %s" % e))
+        _, box, device_name, endpoint = msg.topic.split('/')
 
-    # def on_publish(self, mqttc, obj, mid):
-    #     print("mid: "+str(mid))
+        if box == "outbox" and endpoint == "deviceInfo":
+            payload = msg.payload.decode("ascii")
+            self.dashboard_send({
+                "type": "mqtt_device_connected", 
+                "device_name": device_name,
+            })
+            return 
+        -
+        if box == "outbox" and endpoint == "lwt":
+            payload = msg.payload.decode("ascii")
+            self.dashboard_send({
+                "type": "mqtt_device_disconnected", 
+                "device_name": device_name,
+            })
+            return 
 
-    # def on_subscribe(self, mqttc, obj, mid, granted_qos):
-    #     print("Subscribed: "+str(mid)+" "+str(granted_qos))
+        # payload = msg.payload.decode("ascii")
+        self.dashboard_send({
+            "type": "mqtt_device_update", 
+            "device_name": device_name,
+            "endpoint": endpoint,
+            "value": msg.payload.decode("ascii"),
+        })
+            # try:
+            # except Exception as e:
+                #  self.ctx.stdout.write(self.ctx.style.ERROR("Failed to process payload %s" % e))
 
-    # def on_log(self, mqttc, obj, level, string):
-    #     print(string)
+    def dashboard_send(self, data):
+        async_to_sync(self.channel_layer.group_send)(
+            DashboardConsumer.GROUPNAME, 
+            data
+        )
 
     def run(self):
         # self.enable_logger()
