@@ -24,24 +24,11 @@ class DashboardConsumer(WebsocketConsumer):
     # Receive message from WebSocket
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json['message']
+        device_name = text_data_json['device_name']
+        endpoint = text_data_json['endpoint']
+        payload = text_data_json['payload']
 
-        # Send message to room group
-        async_to_sync(self.channel_layer.group_send)(
-            DashboardConsumer.GROUPNAME,
-            {
-                'type': 'caht_update',
-                'message': message
-            }
-        )
-
-    def caht_update(self, event):
-        message = event['message']
-
-        # Send message to WebSocket
-        self.send(text_data=json.dumps({
-            'message': message
-        }))
+        print (device_name, endpoint, payload)
 
     # Receive message from dashboard group
     def mqtt_device_update(self, event):
@@ -58,11 +45,12 @@ class DashboardConsumer(WebsocketConsumer):
     # Receive message from dashboard group
     def mqtt_device_connected(self, event):
         device_name = event['device_name']
+        device_info = event['device_info']
 
-        template = "<device {} connected>"
+        template = "<device {} connected> {}"
         # Send message to WebSocket
         self.send(text_data=json.dumps({
-            'message': template.format(device_name)
+            'message': template.format(device_name, device_info)
         }))
 
         

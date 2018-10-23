@@ -1,27 +1,44 @@
-<!-- chat/templates/chat/index.html -->
+<!-- chat/templates/chat/room.html -->
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8"/>
-    <title>Chat Rooms</title>
+    <title>Chat Room</title>
 </head>
 <body>
-    What chat room would you like to enter?<br/>
-    <input id="room-name-input" type="text" size="100"/><br/>
-    <input id="room-name-submit" type="button" value="Enter"/>
-
-    <script>
-        document.querySelector('#room-name-input').focus();
-        document.querySelector('#room-name-input').onkeyup = function(e) {
-            if (e.keyCode === 13) {  // enter, return
-                document.querySelector('#room-name-submit').click();
-            }
-        };
-
-        document.querySelector('#room-name-submit').onclick = function(e) {
-            var roomName = document.querySelector('#room-name-input').value;
-            window.location.pathname = '/' + roomName + '/';
-        };
-    </script>
+    <textarea id="device-log" cols="100" rows="20"></textarea><br/>
+    <label>Device name <input id="device-name-input" type="text" value="cloudmqtt-user"/></label><br/>
+    <label>Device endpoint <input id="device-endpoint-input" type="text" value="deviceInfo"/></label><br/>
+    <label>Device payload <input id="device-payload-input" type="text" value="get"/></label><br/>
+    <input id="device-message-submit" type="button" value="Send"/>
 </body>
+<script>
+    var chatSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/dashboard');
+
+    chatSocket.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        var message = data['message'];
+        let chat_log = document.querySelector('#device-log');
+        chat_log.value += (message + '\n');
+        chat_log.scrollTop = chat_log.scrollHeight;
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#device-message-submit').focus();
+
+    document.querySelector('#device-message-submit').onclick = function(e) {
+        var messageInputDom = document.querySelector('#device-name-input');
+        var message = messageInputDom.value;
+        chatSocket.send(JSON.stringify({
+            'device_name': document.querySelector('#device-name-input').value,
+            'endpoint': document.querySelector('#device-endpoint-input').value,
+            'payload': document.querySelector('#device-payload-input').value
+        }));
+    };
+</script>
 </html>

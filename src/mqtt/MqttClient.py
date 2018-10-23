@@ -2,6 +2,7 @@ import paho.mqtt.client as mqtt
 from channels.layers import get_channel_layer
 from dashboard.consumers import DashboardConsumer
 from asgiref.sync import async_to_sync
+from django.conf import settings
 
 class MqttClient(mqtt.Client):
     devices = ["cloudmqtt-user"]
@@ -24,13 +25,14 @@ class MqttClient(mqtt.Client):
         _, box, device_name, endpoint = msg.topic.split('/')
 
         if box == "outbox" and endpoint == "deviceInfo":
-            payload = msg.payload.decode("ascii")
+            device_info = msg.payload.decode("ascii")
             self.dashboard_send({
                 "type": "mqtt_device_connected", 
                 "device_name": device_name,
+                "device_info": device_info,
             })
             return 
-        -
+
         if box == "outbox" and endpoint == "lwt":
             payload = msg.payload.decode("ascii")
             self.dashboard_send({
@@ -39,7 +41,6 @@ class MqttClient(mqtt.Client):
             })
             return 
 
-        # payload = msg.payload.decode("ascii")
         self.dashboard_send({
             "type": "mqtt_device_update", 
             "device_name": device_name,
@@ -58,6 +59,10 @@ class MqttClient(mqtt.Client):
 
     def run(self):
         # self.enable_logger()
-        self.connect("mqtt", 1883, 60)
+        self.connect(
+            settings.MQTT_BROKER["HOST"], 
+            settings.MQTT_BROKER["PORT"], 
+            settings.MQTT_BROKER["KEEP_ALIVE"], 
+        )
 
         self.loop_forever()
