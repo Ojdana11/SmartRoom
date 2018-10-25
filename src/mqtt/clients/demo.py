@@ -5,7 +5,8 @@ import random
 
 clientName = "cloudmqtt-user"
 mqttBrokerName = "192.168.1.6"
-mqttBrokerPort = "1883"
+#mqttBrokerName = "127.0.0.1"
+mqttBrokerPort = "1884"
 
 #device setup
 j = """
@@ -189,6 +190,7 @@ def on_message(client, userdata, msg):
 
     if box == "inbox" and str(msg.payload) == "get" and address == "deviceInfo":
         client.publish("/outbox/"+clientName+"/deviceInfo", deviceJson)
+        return
 
     if box == "inbox":
         #currently only echoing to simulate turning on the lights successfully

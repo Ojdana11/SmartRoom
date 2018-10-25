@@ -26,6 +26,9 @@ class MqttClient(mqtt.Client):
 
         if box == "outbox" and endpoint == "deviceInfo":
             device_info = msg.payload.decode("ascii")
+            if device_info == 'get':
+                return
+                
             self.dashboard_send({
                 "type": "mqtt_device_connected", 
                 "device_name": device_name,

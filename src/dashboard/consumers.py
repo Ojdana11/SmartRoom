@@ -49,7 +49,7 @@ devices = """{
     },
     "cloudmqtt-user2": {
       "status": "good",
-      "color": "#4D90FE",
+      "color": "#ff0000",
       "endPoints": {
         "backDoorLock2": {
           "title": "Employee Door2",
@@ -102,15 +102,15 @@ class DashboardConsumer(JsonWebsocketConsumer):
         self.accept()
 
         # # TODO  for all devices in database
-        # publish.single(
-        #     topic="/inbox/cloudmqtt-user/deviceInfo", 
-        #     payload="get", 
-        #     hostname=settings.MQTT_BROKER["HOST"],
-        #     port=settings.MQTT_BROKER["PORT"],
-        #     keepalive=settings.MQTT_BROKER["KEEP_ALIVE"]
-        # )
+        publish.single(
+            topic="/inbox/cloudmqtt-user/deviceInfo", 
+            payload="get", 
+            hostname=settings.MQTT_BROKER["HOST"],
+            port=settings.MQTT_BROKER["PORT"],
+            keepalive=settings.MQTT_BROKER["KEEP_ALIVE"]
+        )
 
-        self.send(devices)
+        # self.send(devices)
 
 
     def disconnect(self, close_code):
@@ -142,30 +142,37 @@ class DashboardConsumer(JsonWebsocketConsumer):
         endpoint = event['endpoint']
         value = event['value']
 
-        template = "<device {} update on {} endpoint> {}"
+        # print("<device {} update on {}> {}".format(device_name, endpoint, value))
         # Send message to WebSocket
-        # self.send_json({
-        #     'message': template.format(device_name, endpoint, value)
-        # })
+        self.send_json({
+            'type': 'update',
+            'device_name': device_name,
+            'endpoint': endpoint,
+            'values': json.loads(value),
+        })
 
     # Receive message from dashboard group
     def mqtt_device_connected(self, event):
         device_name = event['device_name']
         device_info = event['device_info']
 
-        template = "<device {} connected> {}"
+    
+        print("<device {} connected>".format(device_name))
+        # print(JSON.parse(device_info)['deviceInfo'])
         # Send message to WebSocket
-        # self.send_json({
-        #     'type': 'devices',
-        #     'message': template.format(device_name, device_info)
-        # })
+        self.send_json({
+            'type': 'devices',
+            'devices': {
+              device_name: json.loads(device_info)['deviceInfo']
+            }
+        })
 
         
     # Receive message from dashboard group
     def mqtt_device_disconnected(self, event):
         device_name = event['device_name']
 
-        template = "<device {} disconnected>"
+        print("<device {} disconnected>".format(device_name))
         # Send message to WebSocket
         # self.send_json({
         #     'message': template.format(device_name)
