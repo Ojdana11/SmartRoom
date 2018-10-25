@@ -32,7 +32,6 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
-    'dashboard',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'channels',
+    'dashboard', # custom
+    'mqtt', # custom
 ]
 
 MIDDLEWARE = [
@@ -112,7 +113,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Warsaw'
 
 USE_I18N = True
 
@@ -135,4 +136,10 @@ CHANNEL_LAYERS = {
             "hosts": [("redis", 6379)],
         },
     },
+}
+
+MQTT_BROKER = {
+    "HOST": "mqtt",
+    "PORT": 1883,
+    "KEEP_ALIVE": 60,
 }
