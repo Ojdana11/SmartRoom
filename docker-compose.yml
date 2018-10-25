@@ -5,6 +5,8 @@ services:
     restart: always
     environment:
        POSTGRES_PASSWORD: 1234
+    volumes:
+        - "./data:/var/lib/postgresql/data"
 
   mqtt:
     image: fstehle/rpi-mosquitto
