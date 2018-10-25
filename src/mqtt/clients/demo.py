@@ -5,7 +5,7 @@ import random
 
 clientName = "cloudmqtt-user"
 mqttBrokerName = "192.168.1.6"
-mqttBrokerPort = "1884"
+mqttBrokerPort = "1883"
 
 #device setup
 j = """

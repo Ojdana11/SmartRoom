@@ -1,9 +1,96 @@
 # dashboard/consumers.py
 from asgiref.sync import async_to_sync
-from channels.generic.websocket import WebsocketConsumer
+from django.conf import settings
+from channels.generic.websocket import JsonWebsocketConsumer
 import json
+import paho.mqtt.publish as publish
 
-class DashboardConsumer(WebsocketConsumer):
+devices = """{
+	"devices": {
+		"cloudmqtt-user": {
+			"status": "good",
+			"color": "#4D90FE",
+			"endPoints": {
+				"backDoorLock": {
+					"title": "Employee Door",
+					"card-type": "crouton-simple-toggle",
+					"labels": {
+						"false": "Unlocked",
+						"true": "Locked"
+					},
+					"values": {
+						"value": true
+					},
+					"icons": {
+						"false": "lock",
+						"true": "lock"
+					}
+				},
+				"reset": {
+					"card-type": "crouton-simple-button",
+					"title": "Reset Cards",
+					"values": {
+						"value": false
+					},
+					"icons": {
+						"icon": "cutlery"
+					}
+				},
+				"drinks": {
+					"units": "drinks",
+					"values": {
+						"value": 0
+					},
+					"card-type": "crouton-simple-text",
+					"title": "Drinks Ordered"
+				}
+			},
+			"description": "Kroobar's IOT devices"
+		},
+		"cloudmqtt-user2": {
+			"status": "good",
+			"color": "#4D90FE",
+			"endPoints": {
+				"backDoorLock2": {
+					"title": "Employee Door2",
+					"card-type": "crouton-simple-toggle",
+					"labels": {
+						"false": "Unlocked2",
+						"true": "Locked2"
+					},
+					"values": {
+						"value": false
+					},
+					"icons": {
+						"false": "lock",
+						"true": "lock"
+					}
+				},
+				"reset2": {
+					"card-type": "crouton-simple-button",
+					"title": "Reset Cards2",
+					"values": {
+						"value": true
+					},
+					"icons": {
+						"icon": "cutlery"
+					},
+				"drinks": {
+					"units": "drinks2",
+					"values": {
+						"value": 100
+					},
+					"card-type": "crouton-simple-text",
+					"title": "Drinks Ordered2"
+				}
+			},
+			"description": "Kroobar's IOT devices2"
+		}
+	},
+	"type": "devices"
+}
+"""
+class DashboardConsumer(JsonWebsocketConsumer):
     GROUPNAME = 'dashboard'
     def connect(self):
         # Join dashboard group
@@ -12,6 +99,17 @@ class DashboardConsumer(WebsocketConsumer):
             self.channel_name
         )
         self.accept()
+
+        # # TODO  for all devices in database
+        # publish.single(
+        #     topic="/inbox/cloudmqtt-user/deviceInfo", 
+        #     payload="get", 
+        #     hostname=settings.MQTT_BROKER["HOST"],
+        #     port=settings.MQTT_BROKER["PORT"],
+        #     keepalive=settings.MQTT_BROKER["KEEP_ALIVE"]
+        # )
+
+        self.send(devices)
 
 
     def disconnect(self, close_code):
@@ -22,13 +120,20 @@ class DashboardConsumer(WebsocketConsumer):
         )
 
     # Receive message from WebSocket
-    def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        device_name = text_data_json['device_name']
-        endpoint = text_data_json['endpoint']
-        payload = text_data_json['payload']
+    def receive_json(self, data):
+        print ("data: ", data)
 
-        print (device_name, endpoint, payload)
+        topic = "/inbox/{device_name}/{endpoint}".format(**data)
+        payload = data['payload']
+        print ("topic: ", topic)
+
+        publish.single(
+            topic=topic, 
+            payload=payload, 
+            hostname=settings.MQTT_BROKER["HOST"],
+            port=settings.MQTT_BROKER["PORT"],
+            keepalive=settings.MQTT_BROKER["KEEP_ALIVE"]
+        )
 
     # Receive message from dashboard group
     def mqtt_device_update(self, event):
@@ -38,9 +143,9 @@ class DashboardConsumer(WebsocketConsumer):
 
         template = "<device {} update on {} endpoint> {}"
         # Send message to WebSocket
-        self.send(text_data=json.dumps({
-            'message': template.format(device_name, endpoint, value)
-        }))
+        # self.send_json({
+        #     'message': template.format(device_name, endpoint, value)
+        # })
 
     # Receive message from dashboard group
     def mqtt_device_connected(self, event):
@@ -49,9 +154,10 @@ class DashboardConsumer(WebsocketConsumer):
 
         template = "<device {} connected> {}"
         # Send message to WebSocket
-        self.send(text_data=json.dumps({
-            'message': template.format(device_name, device_info)
-        }))
+        # self.send_json({
+        #     'type': 'devices',
+        #     'message': template.format(device_name, device_info)
+        # })
 
         
     # Receive message from dashboard group
@@ -60,6 +166,6 @@ class DashboardConsumer(WebsocketConsumer):
 
         template = "<device {} disconnected>"
         # Send message to WebSocket
-        self.send(text_data=json.dumps({
-            'message': template.format(device_name)
-        }))
+        # self.send_json({
+        #     'message': template.format(device_name)
+        # })
