@@ -59,7 +59,7 @@ export default {
 }
 
 .device-color {
-  background-color: aqua;
+  background-color: rgba(0, 184, 15, 0.74);
   width: 100%;
   height: 10px;
 }

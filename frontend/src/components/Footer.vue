@@ -1,7 +1,7 @@
 <template>
-    <footer>
-        <p>{{ copyright }}</p>
-    </footer>
+    <div class="footer">
+      <p>{{ copyright }}</p>
+    </div>
 </template>
 <script>
 export default {
@@ -13,12 +13,14 @@ export default {
 };
 </script>
 <style scoped>
-footer {
-  background: #222;
-  padding: 6px;
-}
-p {
-  color: lightgreen;
-  text-align: center;
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: rgba(0, 184, 15, 0.74);
+    color: white;
+    text-align: center;
+    border-radius: 4px;
 }
 </style>

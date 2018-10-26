@@ -19,7 +19,7 @@ Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 // websocket stuff
 import VueNativeSock from 'vue-native-websocket'
-Vue.use(VueNativeSock, 'ws://192.168.1.6:8080/ws/dashboard', {
+Vue.use(VueNativeSock, 'ws://192.168.1.5:8080/ws/dashboard', {
   format: 'json'
 })
 

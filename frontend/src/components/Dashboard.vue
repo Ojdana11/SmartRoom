@@ -48,21 +48,25 @@ export default {
 </script>
 <style scoped>
 .card {
-  margin: 10px;
+  margin: 20px;
   /* background-clip: content-box; */
   background-color: #fafafa;
-  margin-bottom: 20px;
+  /* margin-bottom: 20px; */
   font-size: 16px;
   word-wrap: break-word;
   /* display: inline-block; */
   height: 200px;
-  width: 100%;
+  /* width: 100%; */
 }
 
 .card-wrapper {
+  padding-top: 5em;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  grid-template-rows: minmax(50px, 1fr);
+  grid-template-columns: repeat(5, 1fr);
+  /* grid-auto-columns: 200px; */
+  /* grid-auto-flow: row dense;
+  justify-items: start; */
+  /* grid-template-rows: minmax(50px, 1fr); */
 }
 
 .dashboard {
