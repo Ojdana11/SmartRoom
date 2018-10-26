@@ -1,3 +1,27 @@
 from django.db import models
 
-# Create your models here.
+
+class Device(models.Model):
+    device_id = models.AutoField(primary_key=True)
+    device_name = models.CharField(max_length=30)
+    status = models.CharField(max_length=20)
+    description = models.CharField(max_length=50)
+
+    def show_endpoints(self):
+        return Endpoint.objects.filter(device_id=self.device_id)
+
+
+class Endpoint(models.Model):
+    endpoint_id = models.AutoField(primary_key=True)
+    device_id = models.ForeignKey(Device, on_delete=models.CASCADE)
+    title = models.CharField(max_length=30)
+    card_type = models.CharField(max_length=30)
+    units = models.CharField(max_length=30)
+
+    def show_values(self):
+        return EndpointsValue.objects.filter(endpoint_id=self.id)
+
+
+class EndpointsValue(models.Model):
+    endpoint_id = models.ForeignKey(Endpoint, on_delete=models.CASCADE)
+    value = models.CharField(max_length=20)
