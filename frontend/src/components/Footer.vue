@@ -7,7 +7,7 @@
 export default {
   data() {
     return {
-      copyright: 'Best footer ever'
+      copyright: 'SmartRoom 2018'
     };
   }
 };
@@ -21,6 +21,10 @@ export default {
     background-color: rgba(0, 184, 15, 0.74);
     color: white;
     text-align: center;
+    font-size: 13px;
     border-radius: 4px;
+}
+.footer p {
+    margin: 10px 0;
 }
 </style>
